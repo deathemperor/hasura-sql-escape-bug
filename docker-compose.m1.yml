@@ -1,0 +1,32 @@
+version: '3.5'
+services:
+  postgres:
+    image: postgres:12
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgrespassword
+  graphql-engine:
+    image: fedormelexin/graphql-engine-arm64:v2.0.0-alpha.10.cli-migrations-v3
+    depends_on:
+      - 'postgres'
+    volumes:
+      - ./hasura/migrations:/hasura-migrations
+      - ./hasura/metadata:/hasura-metadata
+    ports:
+      - 8080:8080
+    restart: always
+    environment:
+      - HASURA_GRAPHQL_DATABASE_URL=postgres://postgres:postgrespassword@postgres:5432/postgres
+      - HASURA_GRAPHQL_ENABLE_CONSOLE=true
+      - HASURA_GRAPHQL_ENABLED_LOG_TYPES=startup, http-log, webhook-log, websocket-log, query-log
+      - HASURA_GRAPHQL_ADMIN_SECRET=a
+      - HASURA_GRAPHQL_UNAUTHORIZED_ROLE=anonymous
+      - HASURA_GRAPHQL_JWT_SECRET={"type":"RS512","key":"-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA4Pmijvkp8PCEsuK9NjJ4\nvQoF7Hj3dLquVpvaFy9PufDK6eHMwLtHS5nXrgB3RpYsfwfAoZ25ouyNUlSq/gpn\n6OfqdoTCnsLdfq0RAsRF5TP0WS3XpJPujwmh7rToqPUfwXQjgqTAvSvjXeyP1Es1\nqak0wZEtbDzWAvlIkWkT/pTZxNA7xO5qX4zxwA0zsb5xCcCfdmN+f03ckW++UAWR\nBjXgd21rPKNLn2JJgv5uFLsPbvfzRdiAsB6c2CVA+YVEtqsu5XFm0fdYi+pW4G+o\nt0vqNmN/mBH0LPCITTJy0h/seJFRO+0SYXI/P1ROGDV6sB34uj2Vg3PJtY8uIX7E\nkuzXbdRBcfyqTy1OTHPS7GQdMCqDW6SvZnQO7MKG9nLlmakynwhLHe9XmV2ATwzo\nafoYgH6cTQ5voEUTeafPk56Pq2jOM4SXPtFSvQT1Uew4ZDqNpPp376ZYIziHcxZ7\nF87l9RNpbvYnNkaR4kcUWvioCjutrSzQOEcKq1nGj/1084pOzs0Z3lz9q06HKPHL\nhHVYvnngTsmUQ+N73hQldlpQZ2A+RKg0/KHp8OGzxa6fq93D1fEou2dzVs0UbF9E\nm5xrCpdpguVeZPnqWJvRUetXLR8nXymAl4yk/WskbKTAeI75+m6c150OaVwqdrN+\ntziU8XzEw1R+j8G/q/2aVsUCAwEAAQ==\n-----END PUBLIC KEY-----"}
+      - HASURA_GRAPHQL_EXPERIMENTAL_FEATURES=inherited_roles
+
+volumes:
+  db_data:
